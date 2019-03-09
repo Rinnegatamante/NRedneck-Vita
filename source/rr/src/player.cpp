@@ -5938,21 +5938,21 @@ static void P_DoWater(int const playerNum, int const playerBits, int const floor
 
     if (TEST_SYNC_KEY(playerBits, SK_JUMP) && (!RRRA || !pPlayer->on_motorcycle))
     {
-        pPlayer->vel.z = max(min(-348, pPlayer->vel.z - 348), -(256 * 6));
+        pPlayer->vel.z = max((int)min((int32_t)-348, pPlayer->vel.z - 348), -(256 * 6));
     }
     else if ((TEST_SYNC_KEY(playerBits, SK_CROUCH) && (!RRRA || !pPlayer->on_motorcycle))
         || (RRRA && pPlayer->on_motorcycle))
     {
-        pPlayer->vel.z = min(max(348, pPlayer->vel.z + 348), (256 * 6));
+        pPlayer->vel.z = min((int)max((int32_t)348, pPlayer->vel.z + 348), (256 * 6));
     }
     else
     {
         // normal view
         if (pPlayer->vel.z < 0)
-            pPlayer->vel.z = min(0, pPlayer->vel.z + 256);
+            pPlayer->vel.z = min((int32_t)0, pPlayer->vel.z + 256);
 
         if (pPlayer->vel.z > 0)
-            pPlayer->vel.z = max(0, pPlayer->vel.z - 256);
+            pPlayer->vel.z = max((int32_t)0, pPlayer->vel.z - 256);
     }
 
     if (pPlayer->vel.z > 2048)
@@ -6743,12 +6743,12 @@ void P_ProcessInput(int playerNum)
         if (pPlayer->q16horizoff > 0)
         {
             pPlayer->q16horizoff -= ((pPlayer->q16horizoff >> 3) + fix16_one);
-            pPlayer->q16horizoff = max(pPlayer->q16horizoff, 0);
+            pPlayer->q16horizoff = max(pPlayer->q16horizoff, (int32_t)0);
         }
         else if (pPlayer->q16horizoff < 0)
         {
             pPlayer->q16horizoff += (((-pPlayer->q16horizoff) >> 3) + fix16_one);
-            pPlayer->q16horizoff = min(pPlayer->q16horizoff, 0);
+            pPlayer->q16horizoff = min(pPlayer->q16horizoff, (int32_t)0);
         }
     }
 

@@ -62,7 +62,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # define UPDATEINTERVAL 604800 // 1w
 # include "winbits.h"
 #else
-# ifndef GEKKO
+# if !defined(GEKKO) && !defined(__PSP2__)
 #  include <sys/ioctl.h>
 # endif
 #endif /* _WIN32 */
@@ -484,7 +484,7 @@ static int32_t G_DoThirdPerson(const DukePlayer_t *pp, vec3_t *vect, int16_t *vs
     vect->y += mulscale16(n.y,CAMERADIST);
     vect->z += mulscale16(n.z,CAMERADIST);
 
-    CAMERADIST = min(CAMERADIST+((totalclock-CAMERACLOCK)<<10),65536);
+    CAMERADIST = min(CAMERADIST+((totalclock-CAMERACLOCK)<<10),(int32_t)65536);
     CAMERACLOCK = totalclock;
 
     updatesectorz(vect->x,vect->y,vect->z,vsectnum);
@@ -5374,8 +5374,8 @@ PALONLY:
                         t->cstat &= ~4;
                         t->picnum = RRTILE7213;
                     }
-#endif
                     else
+#endif
                         frameOffset = getofs_viewtype_mirrored<7>(t->cstat, pSprite->ang - oura);
 
                     t->picnum = RRTILE7213 + frameOffset;
@@ -5401,8 +5401,8 @@ PALONLY:
                         t->cstat &= ~4;
                         t->picnum = RRTILE7213;
                     }
-#endif
                     else
+#endif
                         frameOffset = getofs_viewtype_mirrored<7>(t->cstat, pSprite->ang - oura);
 
                     t->picnum = RRTILE7184 + frameOffset;
@@ -7533,7 +7533,7 @@ static void G_Startup(void)
                     G_GameExit("Failed loading art.");
             }
             Bchdir(cwd);
-#ifndef __ANDROID__ //This crashes on *some* Android devices. Small onetime memory leak. TODO fix above function
+#if !defined(__ANDROID__) && !defined(__PSP2__) //This crashes on *some* Android devices. Small onetime memory leak. TODO fix above function
             Bfree(cwd);
 #endif
 
@@ -8164,7 +8164,7 @@ MAIN_LOOP_RESTART:
     lockclock = 0;
 
     g_player[myconnectindex].ps->fta = 0;
-    for (int & q : user_quote_time)
+    for (int32_t & q : user_quote_time)
         q = 0;
 
     Menu_Change(MENU_MAIN);
@@ -8256,7 +8256,7 @@ MAIN_LOOP_RESTART:
             char ch;
             static uint32_t bufpos = 0;
             static char buf[128];
-#ifndef GEKKO
+#if !defined(GEKKO) && !defined(__PSP2__)
             int32_t flag = 1;
             ioctl(0, FIONBIO, &flag);
 #endif
@@ -8420,7 +8420,7 @@ int G_DoMoveThings(void)
     if (g_RTSPlaying > 0)
         g_RTSPlaying--;
 
-    for (int & i : user_quote_time)
+    for (int32_t & i : user_quote_time)
     {
         if (i)
         {

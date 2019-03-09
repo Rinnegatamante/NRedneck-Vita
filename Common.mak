@@ -1,3 +1,4 @@
+PLATFORM := PSP2
 
 # OS package maintainers: Please try invoking make with PACKAGE_REPOSITORY=1 to see if that meets your needs before patching out our optimizations entirely.
 PACKAGE_REPOSITORY ?= 0
@@ -85,6 +86,9 @@ endif
 ifeq ($(PLATFORM),SKYOS)
     EXESUFFIX := .app
 endif
+ifeq ($(PLATFORM),PSP2)
+    EXESUFFIX := .elf
+endif
 ifeq ($(PLATFORM),WINDOWS)
     EXESUFFIX := .exe
     DLLSUFFIX := .dll
@@ -170,6 +174,10 @@ ifeq ($(PLATFORM),WII)
     CROSS := powerpc-eabi-
 
     CCFULLPATH = $(DEVKITPPC)/bin/$(CC)
+endif
+
+ifeq ($(PLATFORM),PSP2)
+    CROSS := arm-vita-eabi-
 endif
 
 CC := $(CROSS)gcc$(CROSS_SUFFIX)
@@ -283,6 +291,8 @@ ifeq ($(PLATFORM),WINDOWS)
     endif
 else ifeq ($(PLATFORM),WII)
     IMPLICIT_ARCH := ppc
+else ifeq ($(PLATFORM),PSP2)
+    IMPLICIT_ARCH := arm
 else
     ifneq ($(ARCH),)
         override ARCH := $(subst i486,i386,$(subst i586,i386,$(subst i686,i386,$(strip $(ARCH)))))
@@ -372,6 +382,14 @@ ifeq ($(PLATFORM),WINDOWS)
     override HAVE_GTK2 := 0
 else ifeq ($(PLATFORM),DARWIN)
     HAVE_GTK2 := 0
+else ifeq ($(PLATFORM),PSP2)
+    override USE_OPENGL := 0
+    override HAVE_GTK2 := 0
+    override NETCODE := 0
+    override NOASM := 1
+    override USE_LIBVPX := 0
+    override HAVE_FLAC := 0
+    SDL_TARGET := 1
 else ifeq ($(PLATFORM),WII)
     override USE_OPENGL := 0
     override NETCODE := 0
@@ -539,6 +557,10 @@ else ifeq ($(PLATFORM),DARWIN)
     ifeq ($(findstring x86_64,$(IMPLICIT_ARCH)),x86_64)
         ASFORMAT += 64
     endif
+else ifeq ($(PLATFORM),PSP2)
+    COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -O0 -g -w -ffunction-sections -fdata-sections -fpermissive
+    COMPILERFLAGS += -D__PSP2__
+    LINKERFLAGS += -Wl,-q
 else ifeq ($(PLATFORM),WII)
     LIBOGC_INC := $(DEVKITPRO)/libogc/include
     LIBOGC_LIB := $(DEVKITPRO)/libogc/lib/wii
@@ -877,6 +899,8 @@ ifeq ($(RENDERTYPE),SDL)
 
     ifeq ($(PLATFORM),WII)
         SDLCONFIG :=
+    else ifeq ($(PLATFORM),PSP2)
+        SDLCONFIG :=
     else ifeq ($(PLATFORM),SKYOS)
         COMPILERFLAGS += -I/boot/programs/sdk/include/sdl
         SDLCONFIG :=
@@ -959,7 +983,7 @@ else ifeq ($(SUBPLATFORM),LINUX)
     LIBS += -lrt
 endif
 
-ifeq (,$(filter $(PLATFORM),WINDOWS WII))
+ifeq (,$(filter $(PLATFORM),WINDOWS WII PSP2))
     ifneq ($(PLATFORM),BSD)
         LIBS += -ldl
     endif

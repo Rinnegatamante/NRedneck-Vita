@@ -193,6 +193,8 @@ uint64_t timerGetTicksU64(void)
     return ticks;
 # elif defined GEKKO
     return ticks_to_nanosecs(gettime());
+# elif defined __PSP2__
+	return sceKernelGetProcessTimeWide();
 # else
     // Blar. This pragma is unsupported on earlier GCC versions.
     // At least we'll get a warning and a reference to this line...
@@ -214,6 +216,8 @@ uint64_t timerGetFreqU64(void)
     return 1000000000;
 # elif defined GEKKO
     return TB_NSPERSEC;
+# elif defined __PSP2__
+	return 1000000;
 # else
     return 1000;
 # endif
@@ -447,7 +451,14 @@ void videoShowFrame(int32_t w)
 #endif
 
     if (offscreenrendering) return;
-
+#ifdef __PSP2__
+	memcpy(vita2d_texture_get_datap(gpu_texture),vita2d_texture_get_datap(fb_texture),vita2d_texture_get_stride(gpu_texture)*vita2d_texture_get_height(gpu_texture));
+    vita2d_start_drawing();
+    vita2d_draw_texture(gpu_texture, 0, 0);
+    vita2d_end_drawing();
+    vita2d_wait_rendering_done();
+	vita2d_swap_buffers();
+#else
     if (lockcount)
     {
         printf("Frame still locked %d times when showframe() called.\n", lockcount);
@@ -459,6 +470,7 @@ void videoShowFrame(int32_t w)
     if (SDL_MUSTLOCK(sdl_surface)) SDL_UnlockSurface(sdl_surface);
 
     SDL_Flip(sdl_surface);
+#endif
 }
 
 

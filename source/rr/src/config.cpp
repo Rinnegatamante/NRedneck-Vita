@@ -260,7 +260,7 @@ void CONFIG_SetDefaults(void)
     ud.weaponsway = 1;
     ud.weaponswitch = 3;	// new+empty
     ud.angleinterpolation = 0;
-#ifdef GEKKO
+#if defined(GEKKO) || defined(__PSP2__)
     ud.config.UseJoystick = 1;
 #else
     ud.config.UseJoystick = 0;
@@ -716,9 +716,14 @@ void CONFIG_WriteSettings(void) // save binds and aliases to <cfgname>_settings.
     char *ptr = Xstrdup(g_setupFileName);
     char tempbuf[128];
 
-    if (!Bstrcmp(g_setupFileName, SETUPFILENAME))
+#ifdef __PSP2__
+	Bsprintf(tempbuf, "ux0:data/NRedneck/settings.cfg");
+#else
+    if (!Bstrcmp(SetupFilename, SETUPFILENAME))
         Bsprintf(tempbuf, "settings.cfg");
-    else Bsprintf(tempbuf, "%s_settings.cfg", strtok(ptr, "."));
+    else
+        Bsprintf(tempbuf, "%s_settings.cfg", strtok(ptr, "."));
+#endif
 
     fp = Bfopen(tempbuf, "wt");
 

@@ -2679,7 +2679,7 @@ ACTOR_STATIC void G_MoveWeapons(void)
                 }
 
                 {
-                    int const i = max(T1(spriteNum), 0);
+                    int const i = max(T1(spriteNum), (int32_t)0);
                     int const newSprite = A_InsertSprite(pSprite->sectnum,
                         pSprite->x+((i*sintable[(pSprite->ang+512)&2047])>>9),
                         pSprite->y+((i*sintable[pSprite->ang])>>9),
@@ -5201,7 +5201,7 @@ ACTOR_STATIC void G_MoveActors(void)
         {
             A_GetZLimits(spriteNum);
 
-            int const yrepeat = max((actor[spriteNum].floorz - actor[spriteNum].ceilingz) >> 9, 255);
+            int const yrepeat = max((actor[spriteNum].floorz - actor[spriteNum].ceilingz) >> 9, (int32_t)255);
             int const xrepeat = clamp(25 - (yrepeat >> 1), 8, 48);
 
             pSprite->yrepeat = yrepeat;

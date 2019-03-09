@@ -419,8 +419,8 @@ void G_DoSectorAnimations(void)
             continue;
         }
 
-        animPos = (animVel > 0) ? min(animPos + animVel, g_animateGoal[animNum])
-                                : max(animPos + animVel, g_animateGoal[animNum]);
+        animPos = (animVel > 0) ? min(animPos + animVel, (int)g_animateGoal[animNum])
+                                : max(animPos + animVel, (int)g_animateGoal[animNum]);
 
         if (g_animatePtr[animNum] == &sector[g_animateSect[animNum]].floorz)
         {

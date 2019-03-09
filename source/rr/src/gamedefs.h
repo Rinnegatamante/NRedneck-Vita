@@ -35,7 +35,11 @@ extern "C" {
 #endif
 
 // config file name
+#ifdef __PSP2__
+#define SETUPFILENAME "ux0:data/NRedneck/redneck.cfg"
+#else
 #define SETUPFILENAME APPBASENAME ".cfg"
+#endif
 
 // KEEPINSYNC mact/include/_control.h, build/src/sdlayer.cpp
 #define MAXJOYBUTTONS 32

@@ -664,7 +664,7 @@ void G_CacheMapData(void)
         if (bpp > 8 && totalclock - tc > TICRATE/4)
         {
             /*Bsprintf(tempbuf,"%d resources remaining\n",g_precacheCount-pc+1);*/
-            int percentage = min(100, tabledivide32_noinline(100 * pc, g_precacheCount));
+            int percentage = min((int32_t)100, tabledivide32_noinline(100 * pc, g_precacheCount));
 
             while (percentage > lpc)
             {
@@ -721,7 +721,7 @@ void G_UpdateScreenArea(void)
         renderFlushPerms();
 
     {
-        const int32_t ss = max(ud.screen_size-8,0);
+        const int32_t ss = max(ud.screen_size-8,(int32_t)0);
 
         int32_t x1 = scale(ss,xdim,160);
         int32_t x2 = xdim-x1;
@@ -1038,7 +1038,7 @@ void P_ResetStatus(int playerNum)
         A_ResetLanePics();
         if (!g_netServer && numplayers < 2)
         {
-            g_ufoSpawn = min(RRRA ? 3 : (ud.m_player_skill*4+1), 32);
+            g_ufoSpawn = min(RRRA ? 3 : (ud.m_player_skill*4+1), (int32_t)32);
             g_ufoCnt = 0;
             g_hulkSpawn = ud.m_player_skill + 1;
         }
@@ -1124,7 +1124,7 @@ void P_ResetInventory(int playerNum)
         A_ResetLanePics();
         if (!g_netServer && numplayers < 2)
         {
-            g_ufoSpawn = min(ud.m_player_skill*4+1, 32);
+            g_ufoSpawn = min(ud.m_player_skill*4+1, (int32_t)32);
             g_ufoCnt = 0;
             g_hulkSpawn = ud.m_player_skill + 1;
         }
@@ -1241,7 +1241,7 @@ static void resetprestat(int playerNum, int gameMode)
         A_ResetLanePics();
         if (!g_netServer && numplayers < 2)
         {
-            g_ufoSpawn = min(ud.m_player_skill*4+1, 32);
+            g_ufoSpawn = min(ud.m_player_skill*4+1, (int32_t)32);
             g_ufoCnt = 0;
             g_hulkSpawn = ud.m_player_skill + 1;
         }
@@ -2615,6 +2615,7 @@ void G_FreeMapState(int levelNum)
 
 void G_SetFog(int fogtype)
 {
+#ifdef USE_OPENGL
     static int oldFogType = 0;
     static int makeTables = 0;
     static char *lut0,*lut30,*lut33,*lut23,*lut8;
@@ -2682,4 +2683,5 @@ void G_SetFog(int fogtype)
             uploadpalswap(8);
         }
     }
+#endif
 }

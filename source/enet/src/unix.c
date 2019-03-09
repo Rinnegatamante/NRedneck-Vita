@@ -6,15 +6,33 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifndef __PSP2__
 #include <sys/ioctl.h>
+#endif
 #include <sys/time.h>
+#ifndef __PSP2__
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#endif
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+
+#ifdef __PSP2__
+#include <vitasdk.h>
+#include <sys/select.h>
+#include <netinet/in.h>
+#define SOMAXCONN 128
+void *net_memory;
+#ifndef HAS_FCNTL
+#define HAS_FCNTL 1
+#endif
+#define TCP_NODELAY SCE_NET_TCP_NODELAY
+#define EEINPROGRESS (SCE_NET_ERROR_EINPROGRESS & 0xFF)
+#define EEWOULDBLOCK (SCE_NET_ERROR_EWOULDBLOCK & 0xFF)
+#endif
 
 #define ENET_BUILDING_LIB 1
 #include "enet/enet.h"
@@ -61,12 +79,39 @@ static enet_uint32 timeBase = 0;
 int
 enet_initialize (void)
 {
+#ifdef __PSP2__
+	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
+	SceNetInitParam initparam;
+	int ret = sceNetShowNetstat();
+	if (ret == SCE_NET_ERROR_ENOTINIT) {
+		net_memory = malloc(1*1024*1024);
+
+		initparam.memory = net_memory;
+		initparam.size = 1*1024*1024;
+		initparam.flags = 0;
+
+		ret = sceNetInit(&initparam);
+		if (ret < 0) return -1;
+
+	}	
+	ret = sceNetCtlInit();
+	if (ret < 0){
+		sceNetTerm();
+		free(net_memory);
+		return -1;
+	}
+#endif
     return 0;
 }
 
 void
 enet_deinitialize (void)
 {
+#ifdef __PSP2__
+	sceNetCtlTerm();
+	sceNetTerm();
+	free(net_memory);
+#endif
 }
 
 // Why, Xcode? Why?
@@ -121,6 +166,8 @@ enet_address_set_host (ENetAddress * address, const char * name)
     {
 #ifdef HAS_INET_PTON
         if (! inet_pton (AF_INET, name, & address -> host))
+#elif __PSP2__
+		if (! sceNetInetPton (SCE_NET_AF_INET, name, & address -> host))
 #else
         if (! inet_aton (name, (struct in_addr *) & address -> host))
 #endif
@@ -138,6 +185,8 @@ enet_address_get_host_ip (const ENetAddress * address, char * name, size_t nameL
 {
 #ifdef HAS_INET_NTOP
     if (inet_ntop (AF_INET, & address -> host, name, nameLength) == NULL)
+#elif __PSP2__
+	if (sceNetInetNtop(SCE_NET_AF_INET, & address -> host, name, nameLength) == NULL)
 #else
     char * addr = inet_ntoa (* (struct in_addr const *) & address -> host);
     if (addr != NULL)
@@ -170,6 +219,9 @@ enet_address_get_host (const ENetAddress * address, char * name, size_t nameLeng
 #else
     hostEntry = gethostbyaddr_r ((char *) & in, sizeof (struct in_addr), AF_INET, & hostData, buffer, sizeof (buffer), & errnum);
 #endif
+#elif defined(__PSP2__)
+	if (sceNetInetNtop(SCE_NET_AF_INET, & address -> host, name, nameLength) != NULL)
+		hostEntry = gethostbyname (name);
 #else
     in.s_addr = address -> host;
 
@@ -288,11 +340,11 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
             result = setsockopt (socket, SOL_SOCKET, SO_SNDTIMEO, (char *) & timeVal, sizeof (struct timeval));
             break;
         }
-
+		
         case ENET_SOCKOPT_NODELAY:
             result = setsockopt (socket, IPPROTO_TCP, TCP_NODELAY, (char *) & value, sizeof (int));
             break;
-
+			
         default:
             break;
     }
@@ -330,9 +382,16 @@ enet_socket_connect (ENetSocket socket, const ENetAddress * address)
     sin.sin_addr.s_addr = address -> host;
 
     result = connect (socket, (struct sockaddr *) & sin, sizeof (struct sockaddr_in));
+#ifdef __PSP2__
+    if (result < 0) {
+        if (errno == EEINPROGRESS)
+            return 0;
+        result = -1;
+    }
+#else
     if (result == -1 && errno == EINPROGRESS)
       return 0;
-
+#endif
     return result;
 }
 
@@ -400,7 +459,14 @@ enet_socket_send (ENetSocket socket,
     msgHdr.msg_iovlen = bufferCount;
 
     sentLength = sendmsg (socket, & msgHdr, MSG_NOSIGNAL);
-    
+#ifdef __PSP2__
+    if (sentLength < 0) {
+        if (errno == EEWOULDBLOCK)
+            return 0;
+
+        return -1;
+	}
+#else    
     if (sentLength == -1)
     {
        if (errno == EWOULDBLOCK)
@@ -408,7 +474,7 @@ enet_socket_send (ENetSocket socket,
 
        return -1;
     }
-
+#endif
     return sentLength;
 }
 
@@ -434,7 +500,15 @@ enet_socket_receive (ENetSocket socket,
     msgHdr.msg_iovlen = bufferCount;
 
     recvLength = recvmsg (socket, & msgHdr, MSG_NOSIGNAL);
+#ifdef __PSP2__
+    if (recvLength < 0) {
+        if (errno == EEWOULDBLOCK)
+            return 0;
 
+
+        return -1;
+    }
+#else
     if (recvLength == -1)
     {
        if (errno == EWOULDBLOCK)
@@ -442,7 +516,7 @@ enet_socket_receive (ENetSocket socket,
 
        return -1;
     }
-
+#endif
 #ifdef HAS_MSGHDR_FLAGS
     if (msgHdr.msg_flags & MSG_TRUNC)
       return -1;

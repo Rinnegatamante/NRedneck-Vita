@@ -728,7 +728,13 @@ void OSD_SetLogFile(const char *fn)
     if (!fn)
         return;
 
+#ifdef __PSP2__
+	char fname[256];
+	sprintf(fname, "ux0:data/NRedneck/%s", fn);
+    osdlog = Bfopen(fname, "w");
+#else
     osdlog = Bfopen(fn, "w");
+#endif
 
     if (osdlog)
     {
@@ -1528,7 +1534,7 @@ void OSD_Draw(void)
 
         drawosdchar(2+offset,osdrowscur,'>',shade,osd->draw.promptpal);
 
-        len = min(osd->draw.cols-1-3-offset, osd->editor.len-osd->editor.start);
+        len = min(osd->draw.cols-1-3-offset, (int32_t)osd->editor.len-osd->editor.start);
         for (x=len-1; x>=0; x--)
             drawosdchar(3+x+offset,osdrowscur, osd->editor.buf[osd->editor.start+x],osd->draw.editshade<<1,osd->draw.editpal);
 

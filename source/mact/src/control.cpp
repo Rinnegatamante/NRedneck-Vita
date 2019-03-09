@@ -859,8 +859,8 @@ int32_t CONTROL_Startup(controltype which, int32_t(*TimeFunction)(void), int32_t
     //		break;
 
     //	case controltype_keyboardandjoystick:
-    CONTROL_NumJoyAxes    = min(MAXJOYAXES,joystick.numAxes);
-    CONTROL_NumJoyButtons = min(MAXJOYBUTTONS,joystick.numButtons + 4*(joystick.numHats>0));
+    CONTROL_NumJoyAxes    = min((int32_t)MAXJOYAXES,joystick.numAxes);
+    CONTROL_NumJoyButtons = min((int32_t)MAXJOYBUTTONS,joystick.numButtons + 4*(joystick.numHats>0));
     CONTROL_JoystickEnabled = CONTROL_JoyPresent = (inputdevices&4)>>2;
     //		break;
     //}

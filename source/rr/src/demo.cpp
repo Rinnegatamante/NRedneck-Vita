@@ -476,7 +476,7 @@ legacyinput_t recsynclegacy[RECSYNCBUFSIZ];
 
 static void Demo_ReadSyncLegacy(void)
 {
-    int32_t l = min(ud.reccnt, RECSYNCBUFSIZ) / ud.multimode;
+    int32_t l = min((int)ud.reccnt, RECSYNCBUFSIZ) / ud.multimode;
     
     kdfread(recsynclegacy, sizeof(legacyinput_t)*ud.multimode, l, g_demo_recFilePtr);
 

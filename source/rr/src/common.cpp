@@ -211,7 +211,11 @@ void G_SetupGlobalPsky(void)
 //////////
 
 static char g_rootDir[BMAX_PATH];
+#ifdef __PSP2__
+char g_modDir[BMAX_PATH] = "ux0:data/NRedneck";
+#else
 char g_modDir[BMAX_PATH] = "/";
+#endif
 
 int kopen4loadfrommod(const char *fileName, char searchfirst)
 {

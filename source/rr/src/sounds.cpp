@@ -431,7 +431,7 @@ void S_Cleanup(void)
 }
 
 // returns number of bytes read
-int32_t S_LoadSound(int num)
+int32_t S_LoadSound(int32_t num)
 {
     if ((unsigned)num > (unsigned)g_highestSoundIdx || EDUKE32_PREDICT_FALSE(g_sounds[num].filename == NULL))
         return 0;
