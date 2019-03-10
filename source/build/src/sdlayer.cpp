@@ -46,11 +46,13 @@ static SDL_version linked;
 
 #ifdef __PSP2__
 #include <vita2d.h>
+#include "psp2_kbdvita.h"
 
 int _newlib_heap_size_user = 192 * 1024 * 1024;
 
 #define MAX_CURDIR_PATH 512
 char cur_dir[MAX_CURDIR_PATH] = "ux0:data/NRedneck/";
+int can_use_IME_keyboard = 1;
 char *getcwd(char *buf, size_t size) {
     if (buf != NULL) {
         strncpy(buf, cur_dir, size);
@@ -2505,6 +2507,62 @@ int32_t handleevents(void)
 
     return rv;
 }
+
+#ifdef __PSP2__
+static void PSP2_CreateAndPushKeyEvent(SDLKey key_sym, Uint8 event_type) {
+    SDL_Event event;
+    event.type = event_type;
+    event.key.keysym.sym = key_sym;
+    event.key.keysym.unicode = key_sym;
+    event.key.keysym.mod = 0;
+    SDL_PushEvent(&event);
+}
+
+void PSP2_StartTextInput(char *initial_text) {
+    if (!can_use_IME_keyboard)
+        return;
+
+    can_use_IME_keyboard = 0;
+
+    char *text = kbdvita_get("Enter New Text:", initial_text, 16, 0);
+
+
+    // the build engine keyboard fifo buffer can only store 32 keys
+    int i = strlen(initial_text);
+    if (i > 32 - strlen(text))
+        i = 32 - strlen(text);
+
+    while (i > 0) {
+        // delete everything that might be there
+        PSP2_CreateAndPushKeyEvent(SDLK_BACKSPACE, SDL_KEYDOWN);
+        PSP2_CreateAndPushKeyEvent(SDLK_BACKSPACE, SDL_KEYUP);
+        i--;
+    }
+
+    if (text != NULL)
+    {
+		// enter the new text
+        int i=0;
+        while (text[i]!=0 && i<16) {
+            if (text[i]>='A' && text[i]<='Z')
+                text[i]+=32;
+            // convert lf to return
+            if (text[i]==10)
+                text[i]=SDLK_RETURN;
+            PSP2_CreateAndPushKeyEvent((SDLKey) text[i], SDL_KEYDOWN);
+			PSP2_CreateAndPushKeyEvent((SDLKey) text[i], SDL_KEYUP);
+            i++;
+        }
+    }
+    // append return
+    PSP2_CreateAndPushKeyEvent(SDLK_RETURN, SDL_KEYDOWN);
+	PSP2_CreateAndPushKeyEvent(SDLK_RETURN, SDL_KEYUP);
+}
+
+void PSP2_StopTextInput() {
+    can_use_IME_keyboard = 1;
+}
+#endif
 
 #if SDL_MAJOR_VERSION == 1
 #include "sdlayer12.cpp"

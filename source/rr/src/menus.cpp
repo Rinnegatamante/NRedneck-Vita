@@ -35,6 +35,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 droidinput_t droidinput;
 #endif
 
+#ifdef __PSP2__
+#include "sdlayer.h"
+char initial_text[TYPEBUFSIZE + 1] = { 0 };
+#endif
+
 // common positions
 #define MENU_MARGIN_REGULAR 40
 #define MENU_MARGIN_WIDE    32
@@ -56,6 +61,9 @@ static FORCE_INLINE void Menu_StartTextInput()
     SDL_StartTextInput();
 # endif
 #endif
+#ifdef __PSP2__
+    PSP2_StartTextInput("");
+#endif
 }
 
 static FORCE_INLINE void Menu_StopTextInput()
@@ -66,6 +74,9 @@ static FORCE_INLINE void Menu_StopTextInput()
 # else
     SDL_StopTextInput();
 # endif
+#endif
+#ifdef __PSP2__
+    PSP2_StopTextInput();
 #endif
 }
 
@@ -4148,6 +4159,12 @@ static void Menu_Verify(int32_t input)
 
             ((MenuString_t*)M_SAVE.entrylist[M_SAVE.currentEntry]->entry)->editfield = NULL;
         }
+#ifdef __PSP2__
+        else
+		{
+            PSP2_StartTextInput(initial_text);
+        }
+#endif
         break;
 
     case MENU_LOADDELVERIFY:
@@ -6787,7 +6804,19 @@ static void Menu_RunInput_EntryString_Activate(MenuEntry_t *entry)
         object->bufsize = TYPEBUFSIZE;
 
     Menu_EntryStringActivate(/*entry*/);
+#ifdef __PSP2__
+    if (typebuf[0] == 0) {
+        // new save game
+        PSP2_StartTextInput("");
+    }
+    else {
+        // overwriting existing save game
+        // so defer virtual keyboard appearance until after confirmation dialog, but remember filename
+        strncpy(initial_text, typebuf, TYPEBUFSIZE);
+    }
+#else
     Menu_StartTextInput();
+#endif
 }
 
 static void Menu_RunInput_EntryString_Submit(/*MenuEntry_t *entry, */MenuString_t *object)
@@ -6799,7 +6828,11 @@ static void Menu_RunInput_EntryString_Submit(/*MenuEntry_t *entry, */MenuString_
     }
 
     object->editfield = NULL;
+#ifdef __PSP2__
+    PSP2_StopTextInput();
+#else
     Menu_StopTextInput();
+#endif
 }
 
 static void Menu_RunInput_EntryString_Cancel(/*MenuEntry_t *entry, */MenuString_t *object)
