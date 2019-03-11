@@ -559,7 +559,7 @@ else ifeq ($(PLATFORM),DARWIN)
     endif
 else ifeq ($(PLATFORM),PSP2)
     COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -O0 -g -w -ffunction-sections -fdata-sections -fpermissive
-    COMPILERFLAGS += -D__PSP2__
+    COMPILERFLAGS += -D__PSP2__ -DWANT_FMMIDI=1 -DUSE_AUDIO_RESAMPLER -DHAVE_LIBSPEEXDSP
     LINKERFLAGS += -Wl,-q
 else ifeq ($(PLATFORM),WII)
     LIBOGC_INC := $(DEVKITPRO)/libogc/include
