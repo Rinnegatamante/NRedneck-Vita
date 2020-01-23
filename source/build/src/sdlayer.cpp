@@ -96,7 +96,7 @@ static SDL_GLContext sdl_context=NULL;
 #endif
 
 #ifdef __PSP2__
-int32_t xres=960, yres=544, bpp=8, fullscreen=1, bytesperline = 960;
+int32_t xres=640, yres=480, bpp=8, fullscreen=1, bytesperline = 640;
 #else
 int32_t xres=-1, yres=-1, bpp=0, fullscreen=0, bytesperline;
 #endif
@@ -479,10 +479,10 @@ int psp2_main(unsigned int argc, void *argv) {
     vita2d_init();
     vita2d_set_vblank_wait(0);
 
-    gpu_texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
+    gpu_texture = vita2d_create_empty_texture_format(640, 480, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
     vita2d_texture_set_filters(gpu_texture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
 	vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
-    fb_texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
+    fb_texture = vita2d_create_empty_texture_format(640, 480, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
 
     framebuffer = (uint8_t*)vita2d_texture_get_datap(fb_texture);
 
@@ -1897,10 +1897,13 @@ void videoShowFrame(int32_t w)
 
     if (offscreenrendering) return;
 #ifdef __PSP2__
-	memcpy(vita2d_texture_get_datap(gpu_texture),vita2d_texture_get_datap(fb_texture),vita2d_texture_get_stride(gpu_texture)*vita2d_texture_get_height(gpu_texture));
+	sceGxmTransferCopy(640, 480, 0, 0, SCE_GXM_TRANSFER_COLORKEY_NONE,
+		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
+		vita2d_texture_get_datap(fb_texture), 0, 0, 640, 
+		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
+		vita2d_texture_get_datap(gpu_texture), 0, 0, 640, NULL, SCE_GXM_TRANSFER_FRAGMENT_SYNC, NULL);
     vita2d_start_drawing();
-    vita2d_draw_texture(gpu_texture, 0, 0);
-    vita2d_end_drawing();
+    vita2d_draw_texture_scale(gpu_texture, 0, 0, 1.5f, 1.1333f);
     vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
 #else

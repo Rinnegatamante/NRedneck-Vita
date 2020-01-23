@@ -173,8 +173,8 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
-        ud.config.ScreenWidth = 1024;
-        ud.config.ScreenHeight = 768;
+        ud.config.ScreenWidth = 640;
+        ud.config.ScreenHeight = 480;
     }
 #endif
 

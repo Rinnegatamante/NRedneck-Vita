@@ -452,9 +452,13 @@ void videoShowFrame(int32_t w)
 
     if (offscreenrendering) return;
 #ifdef __PSP2__
-	memcpy(vita2d_texture_get_datap(gpu_texture),vita2d_texture_get_datap(fb_texture),vita2d_texture_get_stride(gpu_texture)*vita2d_texture_get_height(gpu_texture));
-    vita2d_start_drawing();
-    vita2d_draw_texture(gpu_texture, 0, 0);
+	sceGxmTransferCopy(640, 480, 0, 0, SCE_GXM_TRANSFER_COLORKEY_NONE,
+		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
+		vita2d_texture_get_datap(fb_texture), 0, 0, 640, 
+		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
+		vita2d_texture_get_datap(gpu_texture), 0, 0, 640, NULL, SCE_GXM_TRANSFER_FRAGMENT_SYNC, NULL);
+	vita2d_start_drawing();
+    vita2d_draw_texture_scale(gpu_texture, 0, 0, 1.5f, 1.1333f);
     vita2d_end_drawing();
     vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
