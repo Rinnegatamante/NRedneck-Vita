@@ -425,6 +425,12 @@ int32_t videoSetMode(int32_t x, int32_t y, int32_t c, int32_t fs)
     return 0;
 }
 
+
+uint8_t stretched = 1;
+uint8_t frameclean = 0;
+uint32_t oldpad;
+SceCtrlData pad;
+
 //
 // showframe() -- update the display
 //
@@ -452,14 +458,29 @@ void videoShowFrame(int32_t w)
 
     if (offscreenrendering) return;
 #ifdef __PSP2__
+
+	sceCtrlPeekBufferPositive(0, &pad, 1);
+	if (((pad.buttons & SCE_CTRL_LTRIGGER) && (pad.buttons & SCE_CTRL_START)) && (!((oldpad & SCE_CTRL_LTRIGGER) && (oldpad & SCE_CTRL_START)))) {
+		stretched = (stretched + 1) % 2;
+		frameclean = 0;
+	}
+	oldpad = pad.buttons;
+	
 	sceGxmTransferCopy(640, 480, 0, 0, SCE_GXM_TRANSFER_COLORKEY_NONE,
 		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
 		vita2d_texture_get_datap(fb_texture), 0, 0, 640, 
 		SCE_GXM_TRANSFER_FORMAT_U8_R, SCE_GXM_TRANSFER_LINEAR,
 		vita2d_texture_get_datap(gpu_texture), 0, 0, 640, NULL, SCE_GXM_TRANSFER_FRAGMENT_SYNC, NULL);
 	vita2d_start_drawing();
-    vita2d_draw_texture_scale(gpu_texture, 0, 0, 1.5f, 1.1333f);
-    vita2d_end_drawing();
+    if (stretched) vita2d_draw_texture_scale(gpu_texture, 0, 0, 1.5f, 1.1333f);
+	else {
+		if (frameclean < 3) {
+			vita2d_clear_screen();
+			frameclean++;
+		}
+		vita2d_draw_texture_scale(gpu_texture, 117, 0, 1.1333f, 1.1333f);
+	}
+	vita2d_end_drawing();
     vita2d_wait_rendering_done();
 	vita2d_swap_buffers();
 #else
