@@ -558,7 +558,7 @@ else ifeq ($(PLATFORM),DARWIN)
         ASFORMAT += 64
     endif
 else ifeq ($(PLATFORM),PSP2)
-    COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -g -w -ffunction-sections -fdata-sections -ffast-math -ftree-vectorize -fpermissive
+    COMMONFLAGS += -marm -mfpu=neon -mcpu=cortex-a9 -g -w -fno-optimize-sibling-calls -ffunction-sections -fdata-sections -ffast-math -ftree-vectorize -fpermissive
     COMPILERFLAGS += -D__PSP2__ -DWANT_FMMIDI=1 -DUSE_AUDIO_RESAMPLER -DHAVE_LIBSPEEXDSP
     LINKERFLAGS += -Wl,-q
 else ifeq ($(PLATFORM),WII)
