@@ -989,7 +989,7 @@ ifeq ($$(PLATFORM),PSP2)
 	cp $($1_$2).elf $($1_$2)_unstripped.elf
 	arm-vita-eabi-strip -g $($1_$2).elf
 	vita-elf-create $($1_$2).elf $($1_$2).velf
-	vita-make-fself -s $($1_$2).velf $($1_$2).bin
+	vita-make-fself -c -s $($1_$2).velf $($1_$2).bin
 	cp $($1_$2).bin platform/PSVita/eboot.bin
 	vita-mksfoex -s TITLE_ID=NREDNECK1 -d ATTRIBUTE2=12 "NRedneck" platform/PSVita/sce_sys/param.sfo
 	7z a -tzip ./NRedneck.vpk -r ./platform/PSVita/sce_sys ./platform/PSVita/eboot.bin
