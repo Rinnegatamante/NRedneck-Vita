@@ -265,6 +265,7 @@ ifeq ($(PLATFORM),PSP2)
     		-lz -lSceDisplay_stub -lSceMotion_stub -lSceAppMgr_stub -lSceSysmodule_stub -lSceCtrl_stub \
     		-lSceTouch_stub -lSceMotion_stub -lm -lSceAppMgr_stub -lSceAppUtil_stub -lScePgf_stub -ljpeg \
     		-lSceRtc_stub -lScePower_stub -lSDL_mixer -lSDL -lmikmod -lspeexdsp -lSceNet_stub -lSceNetCtl_stub
+    LIBS += $(shell arm-vita-eabi-pkg-config --static --libs SDL_mixer)
 endif
 ifeq ($(RENDERTYPE),SDL)
     engine_objs += sdlayer.cpp
@@ -992,7 +993,7 @@ ifeq ($$(PLATFORM),PSP2)
 	vita-make-fself -c -s $($1_$2).velf $($1_$2).bin
 	cp $($1_$2).bin platform/PSVita/eboot.bin
 	vita-mksfoex -s TITLE_ID=NREDNECK1 -d ATTRIBUTE2=12 "NRedneck" platform/PSVita/sce_sys/param.sfo
-	7z a -tzip ./NRedneck.vpk -r ./platform/PSVita/sce_sys ./platform/PSVita/eboot.bin
+	vita-pack-vpk -s platform/PSVita/sce_sys/param.sfo -b platform/PSVita/eboot.bin --add platform/PSVita/sce_sys/icon0.png=sce_sys/icon0.png --add platform/PSVita/sce_sys/livearea=sce_sys/livearea NRedneck.vpk
 else
 ifneq ($$(STRIP),)
 	$$(STRIP) $$@ $$($1_$2_stripflags)
